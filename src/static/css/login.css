@@ -23,3 +23,20 @@ body {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
+
+.table-responsive {
+  overflow-x: auto;
+  position: relative;
+}
+
+th.sticky-action,
+td.sticky-action {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 2;
+}
+
+th.sticky-action {
+  z-index: 3;
+}

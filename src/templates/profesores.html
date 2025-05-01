@@ -1,0 +1,120 @@
+{% extends './home.html' %}
+
+{% block title %}Profesores{% endblock %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/login.css') }}">
+{% endblock %}
+
+{% block body %}
+<!-- Tabla visible solo en pantallas medianas y grandes -->
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3">Profesores</h1>
+        <div class="d-flex gap-2">
+            <a href="" class="btn btn-primary">Agregar Profesor</a>
+            <button type="button" class="btn btn-danger" id="delete-selected">Eliminar Seleccionados</button>
+        </div>
+    </div>
+
+    <div class="table-responsive d-none d-md-block">
+        <table class="table table-striped table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido Paterno</th>
+                    <th>Apellido Materno</th>
+                    <th>Género</th>
+                    <th>Categoría</th>
+                    <th>Grado</th>
+                    <th>Núm. Trabajador</th>
+                    <th>RFC</th>
+                    <th>CURP</th>
+                    <th>Ingreso UNAM</th>
+                    <th>Ingreso Carrera</th>
+                    <th>Correo</th>
+                    <th>Celular</th>
+                    <th>Teléfono</th>
+                    <th>Dirección</th>
+                    <th class="stticky-action">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profesor in profesores %}
+                <tr>
+                    <td><input type="checkbox" name="seleccionados" value="{{ profesor.id_profesor }}"></td>
+                    <td>{{ profesor.id_profesor }}</td>
+                    <td>{{ profesor.nombre }}</td>
+                    <td>{{ profesor.a_paterno }}</td>
+                    <td>{{ profesor.a_materno }}</td>
+                    <td>{{ profesor.genero }}</td>
+                    <td>{{ profesor.categoria }}</td>
+                    <td>{{ profesor.grado }}</td>
+                    <td>{{ profesor.num_trabajador }}</td>
+                    <td>{{ profesor.rfc }}</td>
+                    <td>{{ profesor.curp }}</td>
+                    <td>{{ profesor.ingreso_unam }}</td>
+                    <td>{{ profesor.ingreso_carrera }}</td>
+                    <td>{{ profesor.correo }}</td>
+                    <td>{{ profesor.num_cel }}</td>
+                    <td>{{ profesor.num_tel }}</td>
+                    <td>{{ profesor.direccion }}</td>
+                    <td class="sticky-action">
+                        <a href="" class="btn btn-sm btn-primary">Editar</a>
+                        <a href="" class="btn btn-sm btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjetas visibles solo en móvil -->
+    <div class="d-block d-md-none">
+        {% for profesor in profesores %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="seleccionados"
+                        value="{{ profesor.id_profesor }}" id="profesor{{ profesor.id_profesor }}">
+                    <label class="form-check-label fw-bold" for="profesor{{ profesor.id_profesor }}">
+                        {{ profesor.nombre }} {{ profesor.a_paterno }} {{ profesor.a_materno }}
+                    </label>
+                </div>
+                <p><strong>ID:</strong> {{ profesor.id_profesor }}</p>
+                <p><strong>Género:</strong> {{ profesor.genero }}</p>
+                <p><strong>Categoría:</strong> {{ profesor.categoria }}</p>
+                <p><strong>Grado:</strong> {{ profesor.grado }}</p>
+                <p><strong>Núm. Trabajador:</strong> {{ profesor.num_trabajador }}</p>
+                <p><strong>RFC:</strong> {{ profesor.rfc }}</p>
+                <p><strong>CURP:</strong> {{ profesor.curp }}</p>
+                <p><strong>Ingreso UNAM:</strong> {{ profesor.ingreso_unam }}</p>
+                <p><strong>Ingreso Carrera:</strong> {{ profesor.ingreso_carrera }}</p>
+                <p><strong>Correo:</strong> {{ profesor.correo }}</p>
+                <p><strong>Celular:</strong> {{ profesor.num_cel }}</p>
+                <p><strong>Teléfono:</strong> {{ profesor.num_tel }}</p>
+                <p><strong>Dirección:</strong> {{ profesor.direccion }}</p>
+                <div class="d-flex gap-2">
+                    <a href="" class="btn btn-sm btn-primary flex-fill">Editar</a>
+                    <a href="" class="btn btn-sm btn-danger flex-fill">Eliminar</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- Script para seleccionar todos (solo aplica en la tabla grande) -->
+<script>
+    document.getElementById('select-all')?.addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.table input[name="seleccionados"]');
+        for (const cb of checkboxes) {
+            cb.checked = this.checked;
+        }
+    });
+</script>
+
+{% endblock %}

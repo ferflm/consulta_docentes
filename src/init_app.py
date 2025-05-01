@@ -6,6 +6,7 @@ from flask_wtf.csrf import CSRFProtect
 # Models
 from .models.model_user import Model_User
 from .models.entities.User import User
+from .models.model_profesor import Model_Profesor
 
 mysql = MySQL()
 login_manager_app = LoginManager()
@@ -51,10 +52,11 @@ def init_app(config_class):
     def home():
         return render_template('home.html')
     
-    @app.route('/protected')
+    @app.route('/profesores')
     @login_required
-    def protected():
-        return '<h1>Protected</h1>'
+    def profesores():
+        lista = Model_Profesor.get_profesores(mysql)
+        return render_template('profesores.html', profesores = lista)
     
     def status_401(error):
         return redirect(url_for('login'))
