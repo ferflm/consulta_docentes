@@ -105,6 +105,41 @@ def init_app(config_class):
         grados = Model_Grado.get_grados(mysql)
         return render_template('editar_profesor.html', profesor=profesor, categorias=categorias, grados=grados)
     
+    @app.route('/profesores/agregar', methods=['GET', 'POST'])
+    @login_required
+    def add_profesor():
+        if request.method == 'POST':
+            datos = request.form
+            profesor = Profesor(
+                id_profesor=None,
+                nombre=datos['nombre'],
+                a_paterno=datos['a_paterno'],
+                a_materno=datos['a_materno'],
+                genero=datos['genero'],
+                num_trabajador=datos['num_trabajador'],
+                rfc=datos['rfc'],
+                curp=datos['curp'],
+                ingreso_unam=datos['ingreso_unam'],
+                ingreso_carrera=datos['ingreso_carrera'],
+                correo=datos['correo'],
+                num_cel=datos['num_cel'],
+                num_tel=datos['num_tel'],
+                direccion=datos['direccion']
+            )
+            profesor.id_categoria = int(datos['id_categoria'])
+            profesor.id_grado = int(datos['id_grado'])
+
+            try:
+                Model_Profesor.insert_profesor(mysql, profesor)
+                flash('Profesor agregado correctamente.', 'success')
+                return redirect(url_for('profesores'))
+            except Exception as e:
+                flash(f'Error al agregar profesor: {e}', 'danger')
+
+        categorias = Model_Categoria.get_categorias(mysql)
+        grados = Model_Grado.get_grados(mysql)
+        return render_template('nuevo_profesor.html', categorias=categorias, grados=grados)
+
     def status_401(error):
         return redirect(url_for('login'))
     

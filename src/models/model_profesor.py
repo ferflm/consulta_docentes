@@ -67,3 +67,29 @@ class Model_Profesor():
             return True
         except Exception as ex:
             raise Exception(ex)
+        
+    @classmethod
+    def insert_profesor(cls, db, profesor):
+        try:
+            cursor = db.connection.cursor()
+            sql = """
+                INSERT INTO profesor (
+                    id_categoria, id_grado, num_trabajador, nombre, a_paterno,
+                    a_materno, genero, rfc, curp, ingreso_unam, ingreso_carrera,
+                    correo, num_cel, num_tel, direccion
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            values = (
+                profesor.id_categoria, profesor.id_grado, profesor.num_trabajador,
+                profesor.nombre, profesor.a_paterno, profesor.a_materno,
+                profesor.genero, profesor.rfc, profesor.curp,
+                profesor.ingreso_unam, profesor.ingreso_carrera,
+                profesor.correo, profesor.num_cel, profesor.num_tel,
+                profesor.direccion
+            )
+            cursor.execute(sql, values)
+            db.connection.commit()
+            cursor.close()
+            return True
+        except Exception as ex:
+            raise Exception(f"Error al insertar profesor: {ex}")
