@@ -76,7 +76,11 @@
                     <td>{{ profesor.num_tel }}</td>
                     <td>{{ profesor.direccion }}</td>
                     <td class="sticky-action">
-                        <a href="" class="btn btn-sm btn-primary">Editar</a>
+                        <form method="GET" action="{{ url_for('edit_profesor', id_profesor = profesor.id_profesor) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-primary">Editar</button>
+                        </form>
+
                         <form method="POST" action="{{ url_for('delete_profesor', id_profesor = profesor.id_profesor) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este profesor?');" class="d-inline">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
