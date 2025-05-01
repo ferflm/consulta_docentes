@@ -19,3 +19,14 @@ class Model_Profesor():
             return profesores
         except Exception as ex:
             raise Exception(ex)
+        
+    @classmethod
+    def delete_by_id(cls, db, id_profesor):
+        try:
+            cursor = db.connection.cursor()
+            sql = "DELETE FROM profesor WHERE id_profesor = %s"
+            cursor.execute(sql, (id_profesor,))
+            db.connection.commit()
+            cursor.close()
+        except Exception as ex:
+            raise Exception(ex)

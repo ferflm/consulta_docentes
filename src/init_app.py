@@ -36,7 +36,8 @@ def init_app(config_class):
 
             if logged_user:
                 login_user(logged_user)
-                return redirect(url_for('home'))
+                profesores = Model_Profesor.get_profesores(mysql)
+                return render_template('profesores.html', profesores = profesores)
             else:
                 print('Credenciales inválidas...')
                 flash('Credenciales inválidas...')
@@ -47,16 +48,27 @@ def init_app(config_class):
         logout_user()
         return redirect(url_for('login'))
 
-    @app.route('/home')
+    @app.route('/profesores')
     @login_required
     def home():
-        return render_template('home.html')
+        return render_template('profesores.html')
     
     @app.route('/profesores')
     @login_required
     def profesores():
         lista = Model_Profesor.get_profesores(mysql)
         return render_template('profesores.html', profesores = lista)
+    
+    @app.route('/profesores/delete/<int:id_profesor>', methods=['POST'])
+    @login_required
+    def delete_profesor(id_profesor):
+        try:
+            Model_Profesor.delete_by_id(mysql, id_profesor)
+            flash('Profesor eliminado correctamente', 'success')
+        except Exception as ex:
+            flash(f'Error al eliminar el profesor: {str(ex)}', 'danger')
+        profesores = Model_Profesor.get_profesores(mysql)
+        return render_template('profesores.html', profesores = profesores)
     
     def status_401(error):
         return redirect(url_for('login'))

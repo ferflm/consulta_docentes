@@ -8,10 +8,24 @@
 
 {% block body %}
 <!-- Tabla visible solo en pantallas medianas y grandes -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3">Profesores</h1>
         <div class="d-flex gap-2">
+            <a href="" class="btn btn-secondary">Exportar</a>
+            <a href="" class="btn btn-secondary">Importar</a>
             <a href="" class="btn btn-primary">Agregar Profesor</a>
             <button type="button" class="btn btn-danger" id="delete-selected">Eliminar Seleccionados</button>
         </div>
@@ -63,7 +77,10 @@
                     <td>{{ profesor.direccion }}</td>
                     <td class="sticky-action">
                         <a href="" class="btn btn-sm btn-primary">Editar</a>
-                        <a href="" class="btn btn-sm btn-danger">Eliminar</a>
+                        <form method="POST" action="{{ url_for('delete_profesor', id_profesor = profesor.id_profesor) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este profesor?');" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                        </form>
                     </td>
                 </tr>
                 {% endfor %}
