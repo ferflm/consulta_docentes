@@ -1,0 +1,28 @@
+{% extends './home.html' %}
+
+{% block title %}Importar Profesores{% endblock %}
+
+{% block body %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+    <strong>{{ message }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<h3 class="mb-3">Importar Profesores desde CSV</h3>
+
+<form action="{{ url_for('import_profesores') }}" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+        <label class="form-label">Seleccionar archivo CSV</label>
+        <input type="file" name="archivo_csv" class="form-control" accept=".csv" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Validar Archivo</button>
+</form>
+{% endblock %}

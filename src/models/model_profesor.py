@@ -6,7 +6,7 @@ class Model_Profesor():
     def get_profesores(cls, db):
         try:
             cursor = db.connection.cursor()
-            sql = "SELECT id_profesor, nombre, a_paterno, a_materno, genero, nombre_categoria, nombre_grado, num_trabajador, rfc, curp, ingreso_unam, ingreso_carrera, correo, num_cel, num_tel, direccion FROM profesor p JOIN categoria c ON p.id_categoria = c.id_categoria JOIN grado g ON p.id_grado = g.id_grado"
+            sql = "SELECT id_profesor, nombre, a_paterno, a_materno, genero, nombre_categoria, nombre_grado, num_trabajador, rfc, curp, ingreso_unam, ingreso_carrera, correo, num_cel, num_tel, direccion FROM profesor p JOIN categoria c ON p.id_categoria = c.id_categoria JOIN grado g ON p.id_grado = g.id_grado ORDER BY id_profesor ASC"
             cursor.execute(sql)
             rows = cursor.fetchall()
             cursor.close()
@@ -93,3 +93,26 @@ class Model_Profesor():
             return True
         except Exception as ex:
             raise Exception(f"Error al insertar profesor: {ex}")
+        
+    @classmethod
+    def get_profesores_by_ids(cls, mysql, ids):
+        try:
+            cursor = mysql.connection.cursor()
+            sql = f"""
+                SELECT id_profesor, nombre, a_paterno, a_materno, genero, nombre_categoria,
+                    nombre_grado, num_trabajador, rfc, curp, ingreso_unam,
+                    ingreso_carrera, correo, num_cel, num_tel, direccion
+                FROM profesor p
+                JOIN categoria c ON p.id_categoria = c.id_categoria
+                JOIN grado g ON p.id_grado = g.id_grado
+                WHERE id_profesor IN ({','.join(['%s'] * len(ids))})
+            """
+            cursor.execute(sql, ids)
+            rows = cursor.fetchall()
+            cursor.close()
+
+            profesores = [Profesor(*row) for row in rows]
+            return profesores
+        except Exception as ex:
+            raise Exception(f"Error al obtener profesores por IDs: {ex}")
+    

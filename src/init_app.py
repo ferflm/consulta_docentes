@@ -1,7 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_file
 from flask_mysqldb import MySQL
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_wtf.csrf import CSRFProtect
+
+import io
+import csv
+import json
+from datetime import datetime
 
 # Models
 from .models.model_user import Model_User
@@ -139,6 +144,161 @@ def init_app(config_class):
         categorias = Model_Categoria.get_categorias(mysql)
         grados = Model_Grado.get_grados(mysql)
         return render_template('nuevo_profesor.html', categorias=categorias, grados=grados)
+    
+    @app.route('/profesores/exportar', methods=['POST'])
+    @login_required
+    def export_profesores():
+        seleccionados = request.form.getlist('seleccionados')
+
+        if not seleccionados:
+            flash('No se seleccionaron profesores para exportar.', 'warning')
+            return redirect(url_for('profesores'))
+        
+        try:
+            ids = tuple(map(int, seleccionados))
+            profesores = Model_Profesor.get_profesores_by_ids(mysql, ids)
+
+            output = io.StringIO()
+            output.write('\ufeff') # Add BOM for Excel compatibility
+
+            writer = csv.writer(output)
+            writer.writerow(['ID', 'Nombre', 'Apellido Paterno', 'Apellido Materno', 'Género',
+                         'Categoría', 'Grado', 'Núm. Trabajador', 'RFC', 'CURP',
+                         'Ingreso UNAM', 'Ingreso Carrera', 'Correo', 'Celular', 'Teléfono', 'Dirección'])
+            
+            for p in profesores:
+                writer.writerow([p.id_profesor, p.nombre, p.a_paterno, p.a_materno, p.genero,
+                             p.categoria, p.grado, p.num_trabajador, p.rfc, p.curp,
+                             p.ingreso_unam, p.ingreso_carrera, p.correo, p.num_cel,
+                             p.num_tel, p.direccion])
+                
+            response = Response(output.getvalue(), mimetype='text/csv')
+            response.headers.set('Content-Disposition', 'attachment', filename='profesores.csv')
+            return response
+        except Exception as e:
+            flash(f'Error al exportar profesores: {e}', 'danger')
+            return redirect(url_for('profesores'))
+
+    @app.route('/profesores/plantilla', methods=['GET'])
+    @login_required
+    def descargar_plantilla():
+        return send_file('static/csv/plantilla.csv', mimetype='text/csv', as_attachment=True, download_name='plantilla.csv')
+    
+    @app.route('/profesores/importar', methods=['GET', 'POST'])
+    @login_required
+    def import_profesores():
+        if request.method == 'GET':
+            return render_template('importar_profesores.html')
+
+        archivo = request.files.get('archivo_csv')
+        if not archivo or archivo.filename == '':
+            flash('No se seleccionó ningún archivo.', 'warning')
+            return redirect(url_for('importar_profesores'))
+
+        try:
+            contenido = archivo.read().decode('utf-8-sig')
+            reader = csv.DictReader(io.StringIO(contenido))
+
+            registros = []
+            errores = []
+
+            for i, row in enumerate(reader, start=2):  # Empieza en línea 2 por encabezados
+                error = []
+                try:
+                    profesor = Profesor(
+                        id_profesor=None,
+                        nombre=row['nombre'].strip(),
+                        a_paterno=row['a_paterno'].strip(),
+                        a_materno=row['a_materno'].strip(),
+                        genero=row['genero'].strip(),
+                        num_trabajador=row['num_trabajador'].strip(),
+                        rfc=row['rfc'].strip(),
+                        curp=row['curp'].strip(),
+                        ingreso_unam=row['ingreso_unam'].strip(),
+                        ingreso_carrera=row['ingreso_carrera'].strip(),
+                        correo=row['correo'].strip(),
+                        num_cel=row['num_cel'].strip(),
+                        num_tel=row['num_tel'].strip(),
+                        direccion=row['direccion'].strip()
+                    )
+                    profesor.id_categoria = int(row['id_categoria'])
+                    profesor.id_grado = int(row['id_grado'])
+
+                    # Validaciones
+                    if profesor.genero not in ['M', 'F']:
+                        error.append('Género inválido')
+                    datetime.strptime(profesor.ingreso_unam, '%Y-%m-%d')
+                    datetime.strptime(profesor.ingreso_carrera, '%Y-%m-%d')
+
+                    registros.append(profesor)
+                except Exception as e:
+                    errores.append({'linea': i, 'mensaje': str(e)})
+
+                registros_dict = [
+                    {
+                        "nombre": p.nombre,
+                        "a_paterno": p.a_paterno,
+                        "a_materno": p.a_materno,
+                        "genero": p.genero,
+                        "id_categoria": p.id_categoria,
+                        "id_grado": p.id_grado,
+                        "num_trabajador": p.num_trabajador,
+                        "rfc": p.rfc,
+                        "curp": p.curp,
+                        "ingreso_unam": p.ingreso_unam,
+                        "ingreso_carrera": p.ingreso_carrera,
+                        "correo": p.correo,
+                        "num_cel": p.num_cel,
+                        "num_tel": p.num_tel,
+                        "direccion": p.direccion
+                    }
+                    for p in registros
+                ]
+
+            return render_template('importar_validar.html',
+                                registros=registros_dict,
+                                errores=errores)
+        except Exception as e:
+            flash(f'Error al procesar el archivo: {e}', 'danger')
+            return redirect(url_for('import_profesores'))
+
+
+    @app.route('/profesores/importar/confirmar', methods=['POST'])
+    @login_required
+    def confirmar_importacion():
+        try:
+            registros_json = request.form['data_json']
+            registros = json.loads(registros_json)
+
+            insertados = 0
+            for r in registros:
+                profesor = Profesor(
+                        id_profesor=None,
+                        nombre=r['nombre'],
+                        a_paterno=r['a_paterno'],
+                        a_materno=r['a_materno'],
+                        genero=r['genero'],
+                        num_trabajador=r['num_trabajador'],
+                        rfc=r['rfc'],
+                        curp=r['curp'],
+                        ingreso_unam=r['ingreso_unam'],
+                        ingreso_carrera=r['ingreso_carrera'],
+                        correo=r['correo'],
+                        num_cel=r['num_cel'],
+                        num_tel=r['num_tel'],
+                        direccion=r['direccion']
+                    )
+                
+                profesor.id_categoria = r['id_categoria']
+                profesor.id_grado = r['id_grado']
+                Model_Profesor.insert_profesor(mysql, profesor)
+                insertados += 1
+
+            flash(f'{insertados} profesores importados exitosamente.', 'success')
+        except Exception as e:
+            flash(f'Error durante la importación: {e}', 'danger')
+
+        return redirect(url_for('profesores'))
 
     def status_401(error):
         return redirect(url_for('login'))

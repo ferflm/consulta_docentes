@@ -1,0 +1,50 @@
+{% extends './home.html' %}
+
+{% block title %}Validar Profesores{% endblock %}
+
+{% block body %}
+<h3 class="mb-3">Resultados de la Validación</h3>
+
+{% if errores %}
+    <div class="alert alert-warning">
+        <strong>Errores detectados:</strong>
+        <ul>
+        {% for e in errores %}
+            <li>Línea {{ e.linea }}: {{ e.mensaje }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+{% if registros %}
+<form method="POST" action="{{ url_for('confirmar_importacion') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="data_json" value='{{ registros | tojson | safe }}'>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nombre</th><th>A. Paterno</th><th>A. Materno</th><th>Género</th>
+                <th>Trabajador</th><th>RFC</th><th>CURP</th><th>Correo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in registros %}
+            <tr>
+                <td>{{ r.nombre }}</td>
+                <td>{{ r.a_paterno }}</td>
+                <td>{{ r.a_materno }}</td>
+                <td>{{ r.genero }}</td>
+                <td>{{ r.num_trabajador }}</td>
+                <td>{{ r.rfc }}</td>
+                <td>{{ r.curp }}</td>
+                <td>{{ r.correo }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button class="btn btn-success">Confirmar Importación</button>
+</form>
+{% endif %}
+{% endblock %}
