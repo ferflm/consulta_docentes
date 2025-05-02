@@ -40,3 +40,8 @@ td.sticky-action {
 th.sticky-action {
   z-index: 3;
 }
+
+.card-body p {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}

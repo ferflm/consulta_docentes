@@ -299,6 +299,46 @@ def init_app(config_class):
             flash(f'Error durante la importación: {e}', 'danger')
 
         return redirect(url_for('profesores'))
+    
+
+    @app.route('/dashboard')
+    @login_required
+    def dashboard():
+        try:
+            cursor = mysql.connection.cursor()
+
+            # Distribución por género
+            cursor.execute("SELECT genero, COUNT(*) FROM profesor GROUP BY genero")
+            genero_data = cursor.fetchall()
+
+            # Distribución por categoría
+            cursor.execute("""
+                SELECT c.nombre_categoria, COUNT(*) 
+                FROM profesor p
+                JOIN categoria c ON p.id_categoria = c.id_categoria 
+                GROUP BY c.nombre_categoria
+            """)
+            categoria_data = cursor.fetchall()
+
+            # Distribución por grado
+            cursor.execute("""
+                SELECT g.nombre_grado, COUNT(*) 
+                FROM profesor p
+                JOIN grado g ON p.id_grado = g.id_grado 
+                GROUP BY g.nombre_grado
+            """)
+            grado_data = cursor.fetchall()
+
+            cursor.close()
+
+            return render_template('dashboard.html',
+                                genero_data=genero_data,
+                                categoria_data=categoria_data,
+                                grado_data=grado_data)
+
+        except Exception as ex:
+            flash(f'Error al cargar datos del dashboard: {ex}', 'danger')
+            return redirect(url_for('profesores'))
 
     def status_401(error):
         return redirect(url_for('login'))
