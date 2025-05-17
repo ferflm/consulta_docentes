@@ -22,14 +22,16 @@
 
 <div class="container py-4">
     <h1 class="h3">Profesores</h1>
-    <form method="POST" action="{{ url_for('export_profesores') }}">
+    <form method="POST" action="{{ url_for('profesor.export_profesores') }}">
         <div class="d-flex flex-column flex-md-row gap-2">
             <input type="text" id="search-input" class="form-control flex-grow-1" placeholder="Buscar..."
                 onkeyup="searchAll()">
+            {% if current_user.rol == 'admin' %}
             <button type="submit" class="btn btn-secondary">Exportar</button>
-            <a href="{{ url_for('descargar_plantilla') }}" class="btn btn-secondary">Descargar Plantilla</a>
-            <a href="{{ url_for('import_profesores') }}" class="btn btn-secondary">Importar</a>
-            <a href="{{ url_for('add_profesor') }}" class="btn btn-primary">Agregar Profesor</a>
+            <a href="{{ url_for('profesor.descargar_plantilla') }}" class="btn btn-secondary">Descargar Plantilla</a>
+            <a href="{{ url_for('profesor.import_profesores') }}" class="btn btn-secondary">Importar</a>
+            <a href="{{ url_for('profesor.add_profesor') }}" class="btn btn-primary">Agregar Profesor</a>
+            {% endif %}
         </div>
 
         <div class="table-responsive d-none d-md-block">
@@ -53,7 +55,9 @@
                         <th>Celular</th>
                         <th>Teléfono</th>
                         <th>Dirección</th>
-                        <th class="stticky-action">Acciones</th>
+                        {% if current_user.rol == 'admin' %}
+                        <th class="stticky-action">Acciones</th>    
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -70,28 +74,28 @@
                         <td>{{ profesor.num_trabajador }}</td>
                         <td>{{ profesor.rfc }}</td>
                         <td>{{ profesor.curp }}</td>
-                        <td>{{ profesor.ingreso_unam }}</td>
-                        <td>{{ profesor.ingreso_carrera }}</td>
+                        <td title="{{ profesor.ingreso_unam }}">{{ profesor.ingreso_unam|relativo }}</td>
+                        <td title="{{ profesor.ingreso_carrera }}">{{ profesor.ingreso_carrera|relativo }}</td>
                         <td>{{ profesor.correo }}</td>
                         <td>{{ profesor.num_cel }}</td>
                         <td>{{ profesor.num_tel }}</td>
                         <td>{{ profesor.direccion }}</td>
+                        {% if current_user.rol == 'admin' %}
                         <td class="sticky-action">
-                            <form method="GET"
-                                action="{{ url_for('edit_profesor', id_profesor = profesor.id_profesor) }}"
-                                class="d-inline">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-primary">Editar</button>
-                            </form>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <a href="{{ url_for('profesor.edit_profesor', id_profesor = profesor.id_profesor) }}" class="btn btn-sm btn-primary">
+                                Editar
+                            </a>
 
                             <form method="POST"
-                                action="{{ url_for('delete_profesor', id_profesor = profesor.id_profesor) }}"
+                                action="{{ url_for('profesor.delete_profesor', id_profesor = profesor.id_profesor) }}"
                                 onsubmit="return confirm('¿Estás seguro de que deseas eliminar este profesor?');"
                                 class="d-inline">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
                             </form>
                         </td>
+                    {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -124,25 +128,27 @@
                 <p><strong>Núm. Trabajador:</strong> {{ profesor.num_trabajador }}</p>
                 <p><strong>RFC:</strong> {{ profesor.rfc }}</p>
                 <p><strong>CURP:</strong> {{ profesor.curp }}</p>
-                <p><strong>Ingreso UNAM:</strong> {{ profesor.ingreso_unam }}</p>
-                <p><strong>Ingreso Carrera:</strong> {{ profesor.ingreso_carrera }}</p>
+                <p><strong>Ingreso UNAM:</strong> <span title="{{ profesor.ingreso_unam }}">{{ profesor.ingreso_unam|relativo }}</span></p>
+                <p><strong>Ingreso Carrera:</strong> <span title="{{ profesor.ingreso_carrera }}">{{ profesor.ingreso_carrera|relativo }}</span></p>
                 <p><strong>Correo:</strong> {{ profesor.correo }}</p>
                 <p><strong>Celular:</strong> {{ profesor.num_cel }}</p>
                 <p><strong>Teléfono:</strong> {{ profesor.num_tel }}</p>
                 <p><strong>Dirección:</strong> {{ profesor.direccion }}</p>
+                {% if current_user.rol == 'admin' %}
                 <div class="d-flex gap-2">
-                    <form method="GET" action="{{ url_for('edit_profesor', id_profesor=profesor.id_profesor) }}"
+                    <form method="GET" action="{{ url_for('profesor.edit_profesor', id_profesor=profesor.id_profesor) }}"
                         class="flex-fill">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-sm btn-primary w-100">Editar</button>
                     </form>
-                    <form method="POST" action="{{ url_for('delete_profesor', id_profesor=profesor.id_profesor) }}"
+                    <form method="POST" action="{{ url_for('profesor.delete_profesor', id_profesor=profesor.id_profesor) }}"
                         onsubmit="return confirm('¿Estás seguro de que deseas eliminar este profesor?');"
                         class="flex-fill">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-sm btn-danger w-100">Eliminar</button>
                     </form>
                 </div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

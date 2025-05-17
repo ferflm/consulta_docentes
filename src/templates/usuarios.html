@@ -1,0 +1,70 @@
+{% extends './home.html' %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block body %}
+<h2 class="mb-4">Administrar Usuarios</h2>
+
+
+{% with messages = get_flashed_messages() %}
+
+{% if messages %}
+<br>
+{% for message in messages %}
+<div class="alert alert-primary alert-dismissible" role="alert">
+    <strong>{{ message }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+{% endwith %}
+
+<div class="mb-3 text-end">
+    <a href="{{ url_for('usuario.add_usuario') }}" class="btn btn-primary">Nuevo Usuario</a>
+</div>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Activo</th>
+            <th>Fecha de Creación</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in usuarios %}
+        <tr>
+            <td>{{ u[0] }}</td>
+            <td>{{ u[1] }}</td>
+            <td>{{ u[2] }}</td>
+            <td>{{ u[3] }}</td>
+            <td>{{ 'Sí' if u[4] else 'No' }}</td>
+            <td>{{ u[5] }}</td>
+            <td>
+                <a href="{{ url_for('usuario.edit_usuario', id_usuario=u[0]) }}" class="btn btn-sm btn-primary">Editar</a>
+
+                <form method="POST" action="{{ url_for('usuario.toggle_usuario', id_usuario=u[0]) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm {{ 'btn-success' if not u[4] else 'btn-danger' }}">
+                        {{ 'Activar' if not u[4] else 'Desactivar' }}
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ url_for('usuario.delete_usuario', id_usuario=u[0]) }}"
+                    onsubmit="return confirm('¿Seguro que quieres eliminar este usuario?');" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        Eliminar
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

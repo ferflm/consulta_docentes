@@ -17,7 +17,7 @@
 {% endif %}
 
 {% if registros %}
-<form method="POST" action="{{ url_for('confirmar_importacion') }}">
+<form method="POST" action="{{ url_for('profesor.confirmar_importacion') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="data_json" value='{{ registros | tojson | safe }}'>
 

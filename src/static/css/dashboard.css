@@ -1,6 +1,7 @@
 .chart {
     width: 100%;
     height: 300px;
+    max-width: 100%;
 }
 
 @media (max-width: 768px) {
